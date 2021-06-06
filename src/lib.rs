@@ -5,7 +5,7 @@ use std::alloc::dealloc;
 use std::alloc::Layout;
 
 mod macros;
-pub use pmacros::compile_time as compile_time;
+pub use pmacros::compile_time;
 
 mod my_handle;
 pub use my_handle::MyHandle;

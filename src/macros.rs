@@ -1,4 +1,3 @@
-
 #[macro_export]
 macro_rules! offset_of {
     ($type:ty, $member:ident) => {

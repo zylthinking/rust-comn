@@ -1,6 +1,7 @@
 #![allow(unused_imports)]
 
-#[macro_use] extern crate comn;
+#[macro_use]
+extern crate comn;
 use comn::*;
 
 #[test]

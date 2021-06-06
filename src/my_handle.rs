@@ -1,5 +1,7 @@
-use std::sync::atomic::{AtomicI32, Ordering};
-use std::sync::Arc;
+use std::sync::{
+    atomic::{AtomicI32, Ordering},
+    Arc,
+};
 
 pub struct MyHandle<T> {
     ptr: Option<Box<T>>,
