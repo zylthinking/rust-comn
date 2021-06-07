@@ -14,7 +14,7 @@ mod list_head;
 pub use list_head::ListHead;
 
 mod lkf;
-pub use lkf::Lkf;
+pub use lkf::{Lkf, LkfNode};
 
 pub unsafe fn malloc<T>() -> *mut T {
     alloc(Layout::new::<T>()) as *mut T
