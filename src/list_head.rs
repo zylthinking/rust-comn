@@ -1,6 +1,8 @@
 #![allow(unused_macros)]
 #![allow(dead_code)]
 
+use crate::nil;
+
 pub struct ListHead {
     pub next: *mut ListHead,
     pub prev: *mut ListHead,
@@ -25,8 +27,8 @@ impl ListHead {
     #[inline]
     pub fn new() -> ListHead {
         ListHead {
-            next: 0 as _,
-            prev: 0 as _,
+            next: nil!(),
+            prev: nil!(),
         }
     }
 

@@ -13,6 +13,9 @@ pub use my_handle::MyHandle;
 mod list_head;
 pub use list_head::ListHead;
 
+mod lkf;
+pub use lkf::Lkf;
+
 pub unsafe fn malloc<T>() -> *mut T {
     alloc(Layout::new::<T>()) as *mut T
 }
