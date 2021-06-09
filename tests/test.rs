@@ -6,11 +6,6 @@ use comn::*;
 
 #[test]
 fn test_proc_macro() {
-    fn a() -> &'static CallPos {
-        callpos!()
-    }
-
-    println!("defined in file: {}", a());
     println!("{}", compile_time!())
 }
 
@@ -71,4 +66,12 @@ fn test_my_handle() {
     // if let &Some(ref x) = z {
     //     println!("fuck {}", x.n)
     // }
+}
+
+#[test]
+fn lkf_test() {
+    InitLkf!(q);
+    let mut x = LkfNode::new();
+    let _ = lkf_put!(&q, &mut x).unwrap();
+    let _ = lkf_put!(&q, &mut x).unwrap();
 }

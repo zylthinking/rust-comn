@@ -95,13 +95,9 @@ impl Lkf {
 // }
 
 #[test]
-fn a() {
+fn lkf_test() {
     InitLkf!(q);
     let mut x = LkfNode::new();
-    let _ = lkf_put!(&mut q, &mut x);
-
-    let ok = &q.put(&mut x, callpos!()).unwrap();
-    let ok = q.put(&mut x, callpos!()).unwrap();
-
-    // println!("{}", q.root)
+    let _ = lkf_put!(&q, &mut x).unwrap();
+    let _ = lkf_put!(&q, &mut x).unwrap();
 }
