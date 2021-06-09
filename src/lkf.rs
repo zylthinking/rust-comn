@@ -1,22 +1,24 @@
-use crate::nil;
+use crate::{callpos, nil, CallPos};
 use std::{
+    future::Ready,
     mem::{size_of, transmute},
-    sync::atomic::{AtomicUsize, Ordering},
+    sync::atomic::{AtomicBool, AtomicUsize, Ordering},
     usize,
 };
 
-pub struct LkfNode(*mut LkfNode, bool);
+pub struct LkfNode(*mut LkfNode, usize);
 
 impl LkfNode {
     pub fn new() -> LkfNode {
-        LkfNode(nil!(), false)
+        LkfNode(nil!(), 0)
     }
 }
 
 impl Drop for LkfNode {
     fn drop(&mut self) {
-        if self.1 {
-            panic!("still linked")
+        if self.1 != 0 {
+            let pos: &'static CallPos = unsafe { transmute(self.1) };
+            panic!("still linked: {}", pos);
         }
     }
 }
@@ -49,15 +51,21 @@ impl Lkf {
     }
 
     #[inline]
-    pub fn put(&self, node: &mut LkfNode) {
-        node.1 = true;
-
+    pub fn put(&self, node: &mut LkfNode, pos: &'static CallPos) -> Result<(), &'static CallPos> {
         unsafe {
-            let next_ptr: usize = transmute(&node.0);
+            let pos: usize = transmute(pos);
+            let b: &AtomicUsize = transmute(&node.1);
+            if let Err(pos) = b.compare_exchange(0, pos, Ordering::Relaxed, Ordering::Relaxed) {
+                let pos: &'static CallPos = transmute(pos);
+                return Err(pos);
+            }
+
+            let next_ptr: usize = transmute(&node.1);
             let tail_ptr: &AtomicUsize = transmute(&self.tail);
             let prev = tail_ptr.swap(next_ptr, Ordering::Relaxed);
             let prev: *mut _ = transmute(prev);
             *prev = node;
+            Ok(())
         }
     }
 
@@ -82,6 +90,9 @@ impl Lkf {
 #[test]
 fn a() {
     InitLkf!(q);
+    let mut x = LkfNode::new();
+    let ok = q.put(&mut x, callpos!()).unwrap();
+    let ok = q.put(&mut x, callpos!()).unwrap();
 
-    println!("{}", q.root)
+    // println!("{}", q.root)
 }

@@ -6,6 +6,11 @@ use comn::*;
 
 #[test]
 fn test_proc_macro() {
+    fn a() -> &'static CallPos {
+        callpos!()
+    }
+
+    println!("defined in file: {}", a());
     println!("{}", compile_time!())
 }
 
