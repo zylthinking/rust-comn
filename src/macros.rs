@@ -40,10 +40,10 @@ impl Display for CallPos {
 #[macro_export]
 macro_rules! callpos {
     () => {{
-        static pos: CallPos = CallPos {
+        static POS: CallPos = CallPos {
             line: line!(),
             file: file!(),
         };
-        &pos
+        &POS
     }};
 }
