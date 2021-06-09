@@ -54,8 +54,8 @@ impl Lkf {
     pub fn put(&self, node: &mut LkfNode, pos: &'static CallPos) -> Result<(), &'static CallPos> {
         unsafe {
             let pos: usize = transmute(pos);
-            let b: &AtomicUsize = transmute(&node.1);
-            if let Err(pos) = b.compare_exchange(0, pos, Ordering::Relaxed, Ordering::Relaxed) {
+            let location: &AtomicUsize = transmute(&node.1);
+            if let Err(pos) = location.compare_exchange(0, pos, Ordering::Relaxed, Ordering::Relaxed) {
                 let pos: &'static CallPos = transmute(pos);
                 return Err(pos);
             }
