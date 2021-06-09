@@ -33,7 +33,7 @@ pub struct CallPos {
 
 impl Display for CallPos {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "({}, {})", self.file, self.line)
+        write!(f, "({}:{})", self.file, self.line)
     }
 }
 

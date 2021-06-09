@@ -39,7 +39,7 @@ macro_rules! InitLkf {
 #[macro_export]
 macro_rules! lkf_put {
     ($list:expr, $node:expr) => {
-        $list.put($node, callpos!());
+        ($list).put($node, callpos!());
     };
 }
 
