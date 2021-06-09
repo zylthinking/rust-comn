@@ -17,7 +17,7 @@ impl LkfNode {
 impl Drop for LkfNode {
     fn drop(&mut self) {
         if self.1 != 0 {
-            let pos: &'static CallPos = unsafe { transmute(self.1) };
+            let pos: &CallPos = unsafe { transmute(self.1) };
             panic!("still linked: {}", pos);
         }
     }
