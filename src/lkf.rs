@@ -36,6 +36,13 @@ macro_rules! InitLkf {
     };
 }
 
+#[macro_export]
+macro_rules! lkf_put {
+    ($list:expr, $node:expr) => {
+        $list.put($node, callpos!());
+    };
+}
+
 impl Lkf {
     #[inline]
     pub fn new() -> Lkf {
@@ -91,7 +98,9 @@ impl Lkf {
 fn a() {
     InitLkf!(q);
     let mut x = LkfNode::new();
-    let ok = q.put(&mut x, callpos!()).unwrap();
+    let _ = lkf_put!(&mut q, &mut x);
+
+    let ok = &q.put(&mut x, callpos!()).unwrap();
     let ok = q.put(&mut x, callpos!()).unwrap();
 
     // println!("{}", q.root)
