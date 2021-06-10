@@ -8,6 +8,20 @@ macro_rules! nil {
 }
 
 #[macro_export]
+macro_rules! cptr {
+    ($ptr:expr) => {
+        ($ptr) as *const _
+    };
+}
+
+#[macro_export]
+macro_rules! mptr {
+    ($ptr:expr) => {
+        cptr!($ptr) as *mut _
+    };
+}
+
+#[macro_export]
 macro_rules! offset_of {
     ($type:ty, $member:ident) => {
         std::ptr::addr_of!((*(0 as *const $type)).$member) as *const _ as usize;
