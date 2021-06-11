@@ -87,7 +87,7 @@ impl Lkf {
     }
 
     #[inline]
-    pub fn get(&mut self) -> *const LkfNode {
+    pub fn get(&mut self) -> *mut LkfNode {
         let node = self.root.0.atomic_swap(nil!(), Ordering::Relaxed);
         if node == nil!() {
             return node;
@@ -97,7 +97,7 @@ impl Lkf {
         unsafe {
             *last = node;
         }
-        cptr!(last)
+        mptr!(last)
     }
 }
 
