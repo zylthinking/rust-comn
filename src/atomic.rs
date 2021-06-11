@@ -17,7 +17,6 @@ pub trait Atomic {
     fn fetch_xor(&self, val: Self, ord: Ordering) -> Self;
 }
 
-#[macro_export]
 macro_rules! atomic_impl {
     ($primitive:ty, $Atomic:ty) => {
         impl Atomic for $primitive {
