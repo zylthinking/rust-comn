@@ -86,22 +86,22 @@ pub trait AtomicPointer<T>: Sized {
 
     fn compare_exchange(
         &self,
-        current: Self,
-        new: Self,
+        current: *const T,
+        new: *const T,
         success: Ordering,
         failure: Ordering,
     ) -> Result<Self, Self>;
 
     fn compare_exchange_weak(
         &self,
-        current: Self,
-        new: Self,
+        current: *const T,
+        new: *const T,
         success: Ordering,
         failure: Ordering,
     ) -> Result<Self, Self>;
 }
 
-impl<U> AtomicPointer<U> for *const U {
+impl<U> AtomicPointer<U> for *mut U {
     fn load(&self, order: Ordering) -> Self {
         let adtomic_ptr: &AtomicPtr<U> = unsafe { transmute(self) };
         adtomic_ptr.load(order)
@@ -119,29 +119,23 @@ impl<U> AtomicPointer<U> for *const U {
 
     fn compare_exchange(
         &self,
-        current: Self,
-        new: Self,
+        current: *const U,
+        new: *const U,
         success: Ordering,
         failure: Ordering,
     ) -> Result<Self, Self> {
         let adtomic_ptr: &AtomicPtr<U> = unsafe { transmute(self) };
-        match adtomic_ptr.compare_exchange(mptr!(current), mptr!(new), success, failure) {
-            Ok(x) => Ok(cptr!(x)),
-            Err(x) => Err(cptr!(x)),
-        }
+        adtomic_ptr.compare_exchange(mptr!(current), mptr!(new), success, failure)
     }
 
     fn compare_exchange_weak(
         &self,
-        current: Self,
-        new: Self,
+        current: *const U,
+        new: *const U,
         success: Ordering,
         failure: Ordering,
     ) -> Result<Self, Self> {
         let adtomic_ptr: &AtomicPtr<U> = unsafe { transmute(self) };
-        match adtomic_ptr.compare_exchange_weak(mptr!(current), mptr!(new), success, failure) {
-            Ok(x) => Ok(cptr!(x)),
-            Err(x) => Err(cptr!(x)),
-        }
+        adtomic_ptr.compare_exchange_weak(mptr!(current), mptr!(new), success, failure)
     }
 }
