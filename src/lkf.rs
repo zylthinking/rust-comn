@@ -3,7 +3,6 @@ use crate::{
     callpos, cptr, mptr, nil, CallPos,
 };
 use std::{
-    future::Ready,
     mem::{size_of, transmute},
     ptr,
     sync::atomic::{AtomicBool, AtomicPtr, AtomicUsize, Ordering},
