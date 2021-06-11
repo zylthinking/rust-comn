@@ -143,6 +143,3 @@ impl<U> AtomicPointer<U> for *const U {
         }
     }
 }
-
-#[test]
-fn a() {}
