@@ -8,7 +8,7 @@ mod macros;
 pub use macros::CallPos;
 pub use pmacros::compile_time;
 
-mod atomic;
+pub mod atomic;
 
 mod my_handle;
 pub use my_handle::MyHandle;
