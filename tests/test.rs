@@ -74,11 +74,13 @@ fn lkf_test() {
     InitLkf!(q);
 
     let mut x = LkfNode::new();
+    assert!(lkf_next!(&mut x) == nil!());
+
     let _ = lkf_put!(&mut q, &mut x).unwrap();
     let result = lkf_put!(&mut q, &mut x);
     assert!(matches!(result, Err(_)));
 
-    let node = q.get();
+    let node = lkf_get!(&mut q);
     assert!(lkf_next!(node) != nil!());
     assert!(lkf_next!(node) == nil!());
 

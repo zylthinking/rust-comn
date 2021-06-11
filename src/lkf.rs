@@ -69,8 +69,8 @@ macro_rules! lkf_put {
 
 #[macro_export]
 macro_rules! lkf_get {
-    ($list:expr, $node:expr) => {
-        ($list).get($node);
+    ($list:expr) => {
+        ($list).get()
     };
 }
 
