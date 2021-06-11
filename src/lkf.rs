@@ -2,12 +2,7 @@ use crate::{
     atomic::{self, AtomicP},
     callpos, cptr, mptr, nil, CallPos,
 };
-use std::{
-    mem::{size_of, transmute},
-    ptr,
-    sync::atomic::Ordering,
-    usize,
-};
+use std::{mem::transmute, ptr, sync::atomic::Ordering, usize};
 
 #[repr(C)]
 #[derive(Debug)]
