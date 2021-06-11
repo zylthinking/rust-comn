@@ -106,6 +106,8 @@ fn lkf_test() {
     InitLkf!(q);
 
     let mut x = LkfNode::new();
+    println!("{:?}, {:p}, {:p}", q.root, &x, q.tail);
+
     let _ = lkf_put!(&mut q, &mut x).unwrap();
     println!("{:?}", x);
     println!("{:?}, {:p}, {:p}", q.root, &x, q.tail);
