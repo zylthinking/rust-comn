@@ -1,4 +1,7 @@
-use crate::{callpos, cptr, mptr, nil, CallPos};
+use crate::{
+    atomic::{self, AtomicP},
+    callpos, cptr, mptr, nil, CallPos,
+};
 use std::{
     future::Ready,
     mem::{size_of, transmute},
@@ -28,7 +31,7 @@ impl Drop for LkfNode {
 
 pub struct Lkf {
     root: LkfNode,
-    tail: *mut *const LkfNode,
+    tail: *mut *mut LkfNode,
 }
 
 #[macro_export]
@@ -61,45 +64,36 @@ impl Lkf {
     }
 
     #[inline]
-    pub fn put(&self, node: *const LkfNode, pos: &'static CallPos) -> Result<(), &'static CallPos> {
+    pub fn put(
+        &mut self,
+        node: *mut LkfNode,
+        pos: &'static CallPos,
+    ) -> Result<(), &'static CallPos> {
         unsafe {
-            let ptr = AtomicPtr::new(mptr!((*node).1));
-            println!("{:p}", (*node).1);
-
-            if let Err(pos) =
-                ptr.compare_exchange(nil!(), mptr!(pos), Ordering::Relaxed, Ordering::Relaxed)
-            {
+            let x = (*node).1.atomic_compare_exchange(
+                nil!(),
+                pos,
+                Ordering::Relaxed,
+                Ordering::Relaxed,
+            );
+            if let Err(pos) = x {
                 return Err(&*pos);
             }
-            ptr::write(mptr!(&(*node).1), pos);
 
-            let ptr = AtomicPtr::new(self.tail);
-            let nextp = ptr.swap(mptr!(&(*node).0), Ordering::Relaxed);
-
-            println!("{:p}---------------", &(*node).0);
+            let nextp: *mut *mut LkfNode = self.tail.atomic_swap(&mut (*node).0, Ordering::Relaxed);
             *nextp = node;
             Ok(())
         }
     }
 
     #[inline]
-    pub fn get(&self) -> *const LkfNode {
-        let ptr = AtomicPtr::<LkfNode>::new(self.root.0);
-        let node = ptr.swap(nil!(), Ordering::Relaxed);
+    pub fn get(&mut self) -> *const LkfNode {
+        let node = self.root.0.atomic_swap(nil!(), Ordering::Relaxed);
         if node == nil!() {
             return node;
         }
 
-        unsafe {
-            println!(
-                "----------------- {:?}, {:?}",
-                *node,
-                *(self.tail as *const LkfNode)
-            );
-        }
-
-        let ptr = AtomicPtr::<*const LkfNode>::new(self.tail);
-        let last = ptr.swap(mptr!(&self.root.0), Ordering::Relaxed);
+        let last = self.tail.atomic_swap(&mut self.root.0, Ordering::Relaxed);
         unsafe {
             *last = node;
         }
@@ -111,11 +105,11 @@ impl Lkf {
 fn lkf_test() {
     InitLkf!(q);
 
-    let x = LkfNode::new();
-    let _ = lkf_put!(&q, &x).unwrap();
+    let mut x = LkfNode::new();
+    let _ = lkf_put!(&mut q, &mut x).unwrap();
     println!("{:?}", x);
     println!("{:?}, {:p}, {:p}", q.root, &x, q.tail);
-    //let _ = q.get();
-    //println!("{:?}", x);
-    let _ = lkf_put!(q, &x).unwrap();
+    let _ = q.get();
+    println!("{:?}, {:p}, {:p}", q.root, &x, q.tail);
+    let _ = lkf_put!(q, &mut x).unwrap();
 }
