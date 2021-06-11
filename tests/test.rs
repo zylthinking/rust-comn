@@ -3,6 +3,7 @@
 #[macro_use]
 extern crate comn;
 use comn::*;
+use std::{self, panic};
 
 #[test]
 fn test_proc_macro() {
@@ -82,7 +83,6 @@ fn lkf_test() {
     assert!(lkf_next!(node) == nil!());
 
     let _ = lkf_put!(q, &mut x).unwrap();
-    let node = q.get();
-    assert!(lkf_next!(node) != nil!());
-    assert!(lkf_next!(node) == nil!());
+    let result = panic::catch_unwind(|| drop(x));
+    assert!(result.is_err());
 }
