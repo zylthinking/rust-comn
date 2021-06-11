@@ -123,8 +123,9 @@ impl<U> AtomicPointer<U> for *const U {
         failure: Ordering,
     ) -> Result<Self, Self> {
         let adtomic_ptr: &AtomicPtr<U> = unsafe { transmute(self) };
-        unsafe {
-            transmute(adtomic_ptr.compare_exchange(mptr!(current), mptr!(new), success, failure))
+        match adtomic_ptr.compare_exchange(mptr!(current), mptr!(new), success, failure) {
+            Ok(x) => Ok(cptr!(x)),
+            Err(x) => Err(cptr!(x)),
         }
     }
 
@@ -136,8 +137,12 @@ impl<U> AtomicPointer<U> for *const U {
         failure: Ordering,
     ) -> Result<Self, Self> {
         let adtomic_ptr: &AtomicPtr<U> = unsafe { transmute(self) };
-        unsafe {
-            transmute(adtomic_ptr.compare_exchange(mptr!(current), mptr!(new), success, failure))
+        match adtomic_ptr.compare_exchange_weak(mptr!(current), mptr!(new), success, failure) {
+            Ok(x) => Ok(cptr!(x)),
+            Err(x) => Err(cptr!(x)),
         }
     }
 }
+
+#[test]
+fn a() {}
