@@ -5,7 +5,7 @@ use crate::{
 use std::{
     mem::{size_of, transmute},
     ptr,
-    sync::atomic::{AtomicBool, AtomicPtr, AtomicUsize, Ordering},
+    sync::atomic::Ordering,
     usize,
 };
 
