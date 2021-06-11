@@ -81,7 +81,7 @@ fn lkf_test() {
     assert!(matches!(result, Err(_)));
 
     let node = lkf_get!(&mut q);
-    assert!(lkf_next!(node) != nil!());
+    assert!(lkf_next!(node) == &mut x);
     assert!(lkf_next!(node) == nil!());
 
     let _ = lkf_put!(q, &mut x).unwrap();
