@@ -71,7 +71,18 @@ fn test_my_handle() {
 #[test]
 fn lkf_test() {
     InitLkf!(q);
+
     let mut x = LkfNode::new();
     let _ = lkf_put!(&mut q, &mut x).unwrap();
-    let _ = lkf_put!(&mut q, &mut x).unwrap();
+    let result = lkf_put!(&mut q, &mut x);
+    assert!(matches!(result, Err(_)));
+
+    let node = q.get();
+    assert!(lkf_next!(node) != nil!());
+    assert!(lkf_next!(node) == nil!());
+
+    let _ = lkf_put!(q, &mut x).unwrap();
+    let node = q.get();
+    assert!(lkf_next!(node) != nil!());
+    assert!(lkf_next!(node) == nil!());
 }

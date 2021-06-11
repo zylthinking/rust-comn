@@ -15,8 +15,26 @@ use std::{
 pub struct LkfNode(*mut LkfNode, *const CallPos);
 
 impl LkfNode {
+    #[inline]
     pub fn new() -> LkfNode {
         LkfNode(nil!(), nil!())
+    }
+
+    #[inline]
+    pub fn next(&mut self) -> *mut LkfNode {
+        let ptr = self.0;
+        unsafe {
+            if ptr == nil!() || (*ptr).0 == nil!() {
+                return nil!();
+            }
+
+            if ptr != self {
+                self.0 = (*ptr).0;
+            }
+            (*ptr).0 = nil!();
+            (*ptr).1 = nil!();
+        }
+        ptr
     }
 }
 
@@ -46,6 +64,20 @@ macro_rules! InitLkf {
 macro_rules! lkf_put {
     ($list:expr, $node:expr) => {
         ($list).put($node, callpos!());
+    };
+}
+
+#[macro_export]
+macro_rules! lkf_get {
+    ($list:expr, $node:expr) => {
+        ($list).get($node);
+    };
+}
+
+#[macro_export]
+macro_rules! lkf_next {
+    ($node:expr) => {
+        unsafe { (*$node).next() }
     };
 }
 
@@ -99,19 +131,4 @@ impl Lkf {
         }
         mptr!(last)
     }
-}
-
-#[test]
-fn lkf_test() {
-    InitLkf!(q);
-
-    let mut x = LkfNode::new();
-    println!("{:?}, {:p}, {:p}", q.root, &x, q.tail);
-
-    let _ = lkf_put!(&mut q, &mut x).unwrap();
-    println!("{:?}", x);
-    println!("{:?}, {:p}, {:p}", q.root, &x, q.tail);
-    let _ = q.get();
-    println!("{:?}, {:p}, {:p}", q.root, &x, q.tail);
-    let _ = lkf_put!(q, &mut x).unwrap();
 }
