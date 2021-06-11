@@ -1,10 +1,9 @@
+use crate::{cptr, mptr};
 use std::intrinsics::transmute;
 use std::sync::atomic::{
     AtomicI16, AtomicI32, AtomicI64, AtomicIsize, AtomicPtr, AtomicU16, AtomicU32, AtomicU64,
     AtomicUsize, Ordering,
 };
-
-use crate::{cptr, mptr};
 
 pub trait Atomic {
     fn load(&self, order: Ordering) -> Self;
