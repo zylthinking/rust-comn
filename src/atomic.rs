@@ -1,8 +1,8 @@
 use crate::{cptr, mptr};
 use std::intrinsics::transmute;
 use std::sync::atomic::{
-    AtomicI16, AtomicI32, AtomicI64, AtomicIsize, AtomicPtr, AtomicU16, AtomicU32, AtomicU64,
-    AtomicUsize, Ordering,
+    AtomicI16, AtomicI32, AtomicI64, AtomicI8, AtomicIsize, AtomicPtr, AtomicU16, AtomicU32,
+    AtomicU64, AtomicU8, AtomicUsize, Ordering,
 };
 
 pub trait Atomic {
@@ -68,6 +68,8 @@ macro_rules! atomic_impl {
     };
 }
 
+atomic_impl!(i8, AtomicI8);
+atomic_impl!(u8, AtomicU8);
 atomic_impl!(i16, AtomicI16);
 atomic_impl!(u16, AtomicU16);
 atomic_impl!(i32, AtomicI32);
