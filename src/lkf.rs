@@ -52,14 +52,6 @@ pub struct Lkf {
     tail: *mut *mut LkfNode,
 }
 
-#[macro_export]
-macro_rules! InitLkf {
-    ($lkf:ident) => {
-        let mut $lkf = $crate::Lkf::new();
-        $lkf.init();
-    };
-}
-
 impl Lkf {
     #[inline]
     pub fn new() -> Lkf {
@@ -110,6 +102,14 @@ impl Lkf {
         }
         mptr!(last)
     }
+}
+
+#[macro_export]
+macro_rules! InitLkf {
+    ($lkf:ident) => {
+        let mut $lkf = $crate::Lkf::new();
+        $lkf.init();
+    };
 }
 
 #[macro_export]
