@@ -72,6 +72,6 @@ fn test_my_handle() {
 fn lkf_test() {
     InitLkf!(q);
     let mut x = LkfNode::new();
-    let _ = lkf_put!(&q, &mut x).unwrap();
-    let _ = lkf_put!(&q, &mut x).unwrap();
+    let _ = lkf_put!(&mut q, &mut x).unwrap();
+    let _ = lkf_put!(&mut q, &mut x).unwrap();
 }
