@@ -60,27 +60,6 @@ macro_rules! InitLkf {
     };
 }
 
-#[macro_export]
-macro_rules! lkf_put {
-    ($list:expr, $node:expr) => {
-        ($list).put($node, callpos!());
-    };
-}
-
-#[macro_export]
-macro_rules! lkf_get {
-    ($list:expr) => {
-        ($list).get()
-    };
-}
-
-#[macro_export]
-macro_rules! lkf_next {
-    ($node:expr) => {
-        unsafe { (*$node).next() }
-    };
-}
-
 impl Lkf {
     #[inline]
     pub fn new() -> Lkf {
@@ -131,4 +110,25 @@ impl Lkf {
         }
         mptr!(last)
     }
+}
+
+#[macro_export]
+macro_rules! lkf_put {
+    ($list:expr, $node:expr) => {
+        ($list).put($node, callpos!());
+    };
+}
+
+#[macro_export]
+macro_rules! lkf_get {
+    ($list:expr) => {
+        ($list).get()
+    };
+}
+
+#[macro_export]
+macro_rules! lkf_next {
+    ($node:expr) => {
+        unsafe { (*$node).next() }
+    };
 }
