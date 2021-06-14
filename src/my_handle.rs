@@ -1,10 +1,13 @@
-use std::sync::{
-    atomic::{AtomicI32, Ordering},
-    Arc,
+use std::{
+    cell::UnsafeCell,
+    sync::{
+        atomic::{AtomicI32, Ordering},
+        Arc,
+    },
 };
 
 pub struct MyHandle<T> {
-    ptr: Option<Box<T>>,
+    ptr: UnsafeCell<Option<Box<T>>>,
     stack: AtomicI32,
     detached: AtomicI32,
     freed: AtomicI32,
@@ -16,7 +19,7 @@ impl<T> MyHandle<T> {
             stack: AtomicI32::new(1),
             detached: AtomicI32::new(0),
             freed: AtomicI32::new(0),
-            ptr: Some(ptr),
+            ptr: UnsafeCell::new(Some(ptr)),
         })
     }
 
@@ -30,15 +33,18 @@ impl<T> MyHandle<T> {
             return &None;
         };
 
-        assert!(
-            n > 0 && self.ptr.is_some(),
-            "{} freed: {}, caller {}@{}",
-            n,
-            self.ptr.is_none(),
-            line,
-            file
-        );
-        &self.ptr
+        unsafe {
+            let optr = self.ptr.get();
+            assert!(
+                n > 0 && (*optr).is_some(),
+                "{} freed: {}, caller {}@{}",
+                n,
+                (*optr).is_none(),
+                line,
+                file
+            );
+            &*optr
+        }
     }
 
     pub fn put(&self) {
@@ -53,8 +59,9 @@ impl<T> MyHandle<T> {
             return;
         }
 
+        let optr = self.ptr.get();
         unsafe {
-            (*(&self.ptr as *const _ as *mut Option<Box<T>>)).take();
+            (*optr).take();
         }
     }
 
