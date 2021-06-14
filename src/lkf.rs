@@ -61,26 +61,22 @@ impl Lkf {
     }
 
     #[inline]
-    pub fn put(
+    pub unsafe fn put(
         &mut self,
         node: *mut LkfNode,
         pos: &'static CallPos,
     ) -> Result<(), &'static CallPos> {
-        unsafe {
-            let x = (*node).1.atomic_compare_exchange(
-                nil!(),
-                pos,
-                Ordering::Relaxed,
-                Ordering::Relaxed,
-            );
-            if let Err(pos) = x {
-                return Err(&*pos);
-            }
-
-            let nextp: *mut *mut LkfNode = self.tail.atomic_swap(&mut (*node).0, Ordering::Relaxed);
-            *nextp = node;
-            Ok(())
+        let x =
+            (*node)
+                .1
+                .atomic_compare_exchange(nil!(), pos, Ordering::Relaxed, Ordering::Relaxed);
+        if let Err(pos) = x {
+            return Err(&*pos);
         }
+
+        let nextp: *mut *mut LkfNode = self.tail.atomic_swap(&mut (*node).0, Ordering::Relaxed);
+        *nextp = node;
+        Ok(())
     }
 
     #[inline]
