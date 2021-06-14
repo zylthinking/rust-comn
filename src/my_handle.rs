@@ -33,8 +33,8 @@ impl<T> MyHandle<T> {
             return &None;
         };
 
+        let optr = self.ptr.get();
         unsafe {
-            let optr = self.ptr.get();
             assert!(
                 n > 0 && (*optr).is_some(),
                 "{} freed: {}, caller {}@{}",
