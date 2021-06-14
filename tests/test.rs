@@ -54,7 +54,7 @@ fn test_my_handle() {
 
     let h = MyHandle::attach(Box::new(X { _n: 98 }));
     let h2 = h.clone();
-    let z = h.get();
+    let _ = h.get();
     h.dettach();
     println!("X should not freed");
     h.put();
