@@ -71,8 +71,7 @@ fn test_my_handle() {
 
 #[test]
 fn lkf_test() {
-    InitLkf!(q);
-
+    let mut q = Lkf::new();
     let mut x = LkfNode::new();
     assert!(lkf_next!(&mut x) == nil!());
 

@@ -1,8 +1,5 @@
-use crate::{
-    atomic::{self, AtomicP},
-    callpos, cptr, mptr, nil, CallPos,
-};
-use std::{mem::transmute, ptr, sync::atomic::Ordering, usize};
+use crate::{atomic::AtomicP, callpos, cptr, mptr, nil, CallPos};
+use std::{mem::transmute, sync::atomic::Ordering};
 
 #[repr(C)]
 #[derive(Debug)]
@@ -56,11 +53,6 @@ impl Lkf {
     }
 
     #[inline]
-    pub fn init(&mut self) {
-        self.tail = unsafe { transmute(&self.root.0) };
-    }
-
-    #[inline]
     pub unsafe fn put(
         &mut self,
         node: *mut LkfNode,
@@ -75,7 +67,11 @@ impl Lkf {
         }
 
         let nextp: *mut *mut LkfNode = self.tail.atomic_swap(&mut (*node).0, Ordering::Relaxed);
-        *nextp = node;
+        if nextp == nil!() {
+            self.root.0.atomic_store(node, Ordering::Relaxed);
+        } else {
+            *nextp = node;
+        }
         Ok(())
     }
 
@@ -92,14 +88,6 @@ impl Lkf {
         }
         mptr!(last)
     }
-}
-
-#[macro_export]
-macro_rules! InitLkf {
-    ($lkf:ident) => {
-        let mut $lkf = $crate::Lkf::new();
-        $lkf.init();
-    };
 }
 
 #[macro_export]
