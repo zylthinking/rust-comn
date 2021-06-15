@@ -91,9 +91,7 @@ impl Lkf {
 #[macro_export]
 macro_rules! lkf_put_unsafe {
     ($list:expr, $node:expr) => {
-        unsafe {
-            ($list).put($node, callpos!())
-        }
+        unsafe { ($list).put($node, callpos!()) }
     };
 }
 
