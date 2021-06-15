@@ -12,19 +12,17 @@ impl LkfNode {
     }
 
     #[inline]
-    pub fn next(&mut self) -> *mut LkfNode {
+    pub unsafe fn next(&mut self) -> *mut LkfNode {
         let ptr = self.0;
-        unsafe {
-            if ptr == nil!() || (*ptr).0 == nil!() {
-                return nil!();
-            }
-
-            if ptr != self {
-                self.0 = (*ptr).0;
-            }
-            (*ptr).0 = nil!();
-            (*ptr).1 = nil!();
+        if ptr == nil!() || (*ptr).0 == nil!() {
+            return nil!();
         }
+
+        if ptr != self {
+            self.0 = (*ptr).0;
+        }
+        (*ptr).0 = nil!();
+        (*ptr).1 = nil!();
         ptr
     }
 }
@@ -105,7 +103,7 @@ macro_rules! lkf_get {
 }
 
 #[macro_export]
-macro_rules! lkf_next {
+macro_rules! lkf_next_unsafe {
     ($node:expr) => {
         unsafe { (*$node).next() }
     };
