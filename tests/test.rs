@@ -76,8 +76,8 @@ fn lkf_test() {
     assert!(lkf_next_unsafe!(&mut x) == nil!());
 
     unsafe {
-        let _ = lkf_put!(&mut q, &mut x).unwrap();
-        let result = lkf_put!(&mut q, &mut x);
+        let _ = lkf_put_unsafe!(&mut q, &mut x).unwrap();
+        let result = lkf_put_unsafe!(&mut q, &mut x);
         assert!(matches!(result, Err(_)));
     }
 
@@ -85,7 +85,7 @@ fn lkf_test() {
     assert!(lkf_next_unsafe!(node) == &mut x);
     assert!(lkf_next_unsafe!(node) == nil!());
 
-    let _ = unsafe { lkf_put!(q, &mut x).unwrap() };
+    let _ = unsafe { lkf_put_unsafe!(q, &mut x).unwrap() };
     let result = panic::catch_unwind(|| drop(x));
     assert!(result.is_err());
 }
