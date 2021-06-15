@@ -188,10 +188,7 @@ impl<U> AtomicP<U> for *mut U {
         failure: Ordering,
     ) -> Result<Self, Self> {
         let adtomic_ptr: &AtomicPtr<U> = unsafe { transmute(self) };
-        match adtomic_ptr.compare_exchange(mptr!(current), mptr!(new), success, failure) {
-            Ok(x) => Ok(x),
-            Err(x) => Err(x),
-        }
+        adtomic_ptr.compare_exchange(mptr!(current), mptr!(new), success, failure)
     }
 
     #[inline]
@@ -203,9 +200,6 @@ impl<U> AtomicP<U> for *mut U {
         failure: Ordering,
     ) -> Result<Self, Self> {
         let adtomic_ptr: &AtomicPtr<U> = unsafe { transmute(self) };
-        match adtomic_ptr.compare_exchange_weak(mptr!(current), mptr!(new), success, failure) {
-            Ok(x) => Ok(x),
-            Err(x) => Err(x),
-        }
+        adtomic_ptr.compare_exchange_weak(mptr!(current), mptr!(new), success, failure)
     }
 }
