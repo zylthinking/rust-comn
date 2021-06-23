@@ -3,7 +3,7 @@ use std::{fmt::Display, mem::ManuallyDrop, mem::MaybeUninit};
 #[macro_export]
 macro_rules! suffx {
     ($($token:tt)*) => {
-        $crate::ident!({$($token)*})
+        $crate::_ident!({$($token)*})
     };
 }
 

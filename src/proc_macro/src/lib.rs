@@ -50,7 +50,7 @@ impl Parse for BlockParser {
 }
 
 #[proc_macro]
-pub fn ident(input: TokenStream) -> TokenStream {
+pub fn _ident(input: TokenStream) -> TokenStream {
     let input = syn::parse_macro_input!(input as BlockParser);
     let b = input.0;
     let statements = b.stmts;
@@ -68,7 +68,7 @@ pub fn ident(input: TokenStream) -> TokenStream {
     let expanded = quote::quote! {
         macro_rules! n {
             ($iden:ident) => {
-                ident_num!($iden, #seq)
+                $crate::_ident_num!($iden, #seq)
             }
         }
         #( #statements )*
@@ -77,7 +77,7 @@ pub fn ident(input: TokenStream) -> TokenStream {
 }
 
 #[proc_macro]
-pub fn ident_num(input: TokenStream) -> TokenStream {
+pub fn _ident_num(input: TokenStream) -> TokenStream {
     let input = syn::parse_macro_input!(input as IdentParser);
     let input = input.0;
     let expanded = quote::quote! {
