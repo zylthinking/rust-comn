@@ -9,6 +9,8 @@ edition = "2018"
 proc-macro = true
 
 [dependencies]
-syn = "1.0.72"
+syn = { version = "1.0.72", features = ["full"] }
 quote = "1.0.9"
 chrono = "0.4.19"
+proc-macro2 = "1.0.27"
+backtrace = "0.3.60"

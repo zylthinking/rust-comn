@@ -7,7 +7,20 @@ use std::{self, panic};
 
 #[test]
 fn test_proc_macro() {
-    println!("{}", compile_time!())
+    suffx!(
+        let n!(x) = 100;
+        let n!(y) = 0;
+    );
+
+    suffx!(
+        let n!(x) = 101;
+        let n!(y) = 107;
+    );
+
+    assert!(x_0 == 100);
+    assert!(y_0 == 0);
+    assert!(x_1 == 101);
+    assert!(y_1 == 107);
 }
 
 #[test]

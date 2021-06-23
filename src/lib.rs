@@ -7,6 +7,8 @@ use std::alloc::Layout;
 mod macros;
 pub use macros::CallPos;
 pub use pmacros::compile_time;
+pub use pmacros::ident;
+pub use pmacros::ident_num;
 
 pub mod atomic;
 
@@ -25,4 +27,11 @@ pub unsafe fn malloc<T>() -> *mut T {
 
 pub unsafe fn free<T>(ptr: *const T) {
     dealloc(ptr as *mut _, Layout::new::<T>());
+}
+
+fn test_proc_macro() {
+    suffx!(
+        let n!(x) = 100;
+        let n!(y) = 0;
+    );
 }
