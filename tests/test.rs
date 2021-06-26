@@ -8,19 +8,19 @@ use std::{self, panic};
 #[test]
 fn test_proc_macro() {
     suffx!(
-        let n!(r#pub) = 100;
-        let n!(y) = 0;
+        let n!(r#pub) = 1;
+        let n!(y) = 2;
     );
 
     suffx!(
-        let n!(x) = 101;
-        let n!(y) = 107;
+        let n!(x) = 3;
+        let n!(y) = 4;
     );
 
-    assert!(pub_0 == 100);
-    assert!(y_0 == 0);
-    assert!(x_1 == 101);
-    assert!(y_1 == 107);
+    assert!(pub_0 == 1);
+    assert!(y_0 == 2);
+    assert!(x_1 == 3);
+    assert!(y_1 == 4);
 }
 
 #[test]
