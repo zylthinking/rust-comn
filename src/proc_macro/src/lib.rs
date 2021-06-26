@@ -1,7 +1,7 @@
 use chrono::prelude::*;
 use proc_macro::TokenStream;
-extern crate chrono;
-extern crate proc_macro2;
+use std::sync::atomic::AtomicI32;
+use proc_macro2::Span;
 use syn::{
     parse::{Parse, ParseStream},
     Block, Ident, LitInt, Token,
@@ -55,22 +55,18 @@ impl Parse for Parser {
     }
 }
 
+fn id32() -> i32 {
+    static N: AtomicI32 = AtomicI32::new(0);
+    N.fetch_add(1, std::sync::atomic::Ordering::Relaxed)
+}
+
 #[proc_macro]
 pub fn _ident(input: TokenStream) -> TokenStream {
     let input = syn::parse_macro_input!(input as Parser);
     match input {
         Parser::_Block(b) => {
             let statements = b.stmts;
-            mod x {
-                use std::sync::atomic::AtomicI32;
-                static N: AtomicI32 = AtomicI32::new(0);
-                pub fn inc() -> i32 {
-                    N.fetch_add(1, std::sync::atomic::Ordering::Relaxed)
-                }
-            }
-            let seq = x::inc();
-
-            let seq = LitInt::new(seq.to_string().as_str(), proc_macro2::Span::call_site());
+            let seq = LitInt::new(id32().to_string().as_str(), Span::call_site());
             let expanded = quote::quote! {
                 macro_rules! n {
                     ($iden:ident) => {
