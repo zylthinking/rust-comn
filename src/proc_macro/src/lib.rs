@@ -65,15 +65,15 @@ pub fn _ident(input: TokenStream) -> TokenStream {
     let input = syn::parse_macro_input!(input as Parser);
     match input {
         Parser::_Block(b) => {
-            let statements = b.stmts;
-            let seq = LitInt::new(id32().to_string().as_str(), Span::call_site());
+            let stmts = b.stmts;
+            let seq = LitInt::new(&id32().to_string(), Span::call_site());
             let expanded = quote::quote! {
                 macro_rules! n {
                     ($iden:ident) => {
                         $crate::_ident!($iden, #seq)
                     }
                 }
-                #( #statements )*
+                #(#stmts)*
             };
             expanded.into()
         }
