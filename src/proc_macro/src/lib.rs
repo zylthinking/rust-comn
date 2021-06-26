@@ -1,7 +1,7 @@
 use chrono::prelude::*;
 use proc_macro::TokenStream;
-use std::sync::atomic::AtomicI32;
 use proc_macro2::Span;
+use std::sync::atomic::AtomicI32;
 use syn::{
     parse::{Parse, ParseStream},
     Block, Ident, LitInt, Token,
