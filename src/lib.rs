@@ -6,7 +6,7 @@ use std::alloc::Layout;
 
 mod macros;
 pub use macros::CallPos;
-pub use pmacros::_ident;
+pub use pmacros::_suffix;
 pub use pmacros::compile_time;
 
 pub mod atomic;

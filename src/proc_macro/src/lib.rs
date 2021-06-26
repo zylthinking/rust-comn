@@ -61,7 +61,7 @@ fn id32() -> i32 {
 }
 
 #[proc_macro]
-pub fn _ident(input: TokenStream) -> TokenStream {
+pub fn _suffix(input: TokenStream) -> TokenStream {
     let input = syn::parse_macro_input!(input as Parser);
     match input {
         Parser::_Block(b) => {
@@ -70,7 +70,7 @@ pub fn _ident(input: TokenStream) -> TokenStream {
             let expanded = quote::quote! {
                 macro_rules! n {
                     ($iden:ident) => {
-                        $crate::_ident!($iden, #seq)
+                        $crate::_suffix!($iden, #seq)
                     }
                 }
                 #(#stmts)*
