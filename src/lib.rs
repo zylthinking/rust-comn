@@ -1,13 +1,10 @@
 #![allow(unused_imports)]
 
-use std::alloc::alloc;
-use std::alloc::dealloc;
-use std::alloc::Layout;
+use std::alloc::{Layout, alloc, dealloc};
+pub use pmacros::{_suffix, compile_time};
 
 mod macros;
 pub use macros::CallPos;
-pub use pmacros::_suffix;
-pub use pmacros::compile_time;
 
 pub mod atomic;
 
