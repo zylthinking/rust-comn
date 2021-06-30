@@ -1,7 +1,7 @@
 #![allow(unused_imports)]
 
-use std::alloc::{Layout, alloc, dealloc};
 pub use pmacros::{_suffix, compile_time};
+use std::alloc::{alloc, dealloc, Layout};
 
 mod macros;
 pub use macros::CallPos;

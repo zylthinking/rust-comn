@@ -100,3 +100,17 @@ fn lkf_test() {
     let result = panic::catch_unwind(|| drop(x));
     assert!(result.is_err());
 }
+
+#[test]
+fn a() {
+    fn t<'a>(_f: fn(&'a String) -> &'a String) {
+        let s = "1".to_owned();
+        _f(&s);
+    }
+
+    fn x1<'a>(_s: &'a String) -> &'static String {
+        let b = Box::new(String::from("111"));
+        unsafe { &*Box::into_raw(b) }
+    }
+    t(x1);
+}
