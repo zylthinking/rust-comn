@@ -103,13 +103,14 @@ fn lkf_test() {
 
 #[test]
 fn a() {
-    fn t<'a>(_f: fn(&'a String) -> &'a String) {
+    fn t(_f: for <'a> fn(&'a String) -> &'a String) {
         let _s = "1".to_owned();
         println!("accept _f");
-        //_f(&s);
+        _f(&_s);
     }
 
     fn x1<'a>(_s: &'a String) -> &'static String {
+        println!("in _f");
         let b = Box::new(String::from("111"));
         unsafe { &*Box::into_raw(b) }
     }
