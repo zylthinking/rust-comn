@@ -104,8 +104,9 @@ fn lkf_test() {
 #[test]
 fn a() {
     fn t<'a>(_f: fn(&'a String) -> &'a String) {
-        let s = "1".to_owned();
-        _f(&s);
+        let _s = "1".to_owned();
+        println!("accept _f");
+        //_f(&s);
     }
 
     fn x1<'a>(_s: &'a String) -> &'static String {
