@@ -85,3 +85,5 @@ impl<T> Drop for MyHandle<T> {
         }
     }
 }
+
+unsafe impl<T> Sync for MyHandle<T> where T: Sync {}

@@ -103,7 +103,7 @@ fn lkf_test() {
 
 #[test]
 fn a() {
-    fn t(_f: for <'a> fn(&'a String) -> &'a String) {
+    fn t(_f: for<'a> fn(&'a String) -> &'a String) {
         let _s = "1".to_owned();
         println!("accept _f");
         _f(&_s);
