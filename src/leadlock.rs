@@ -67,7 +67,8 @@ impl<T> LeadLock<T> {
         if n > 1 {
             let g = self.mux_cond.lock().unwrap();
             let cond = unsafe {
-                let cond = Arc::from_raw(self.cond);
+                let cond = self.cond.atomic_load(Ordering::Relaxed);
+                let cond = Arc::from_raw(cond);
                 let c = cond.clone();
                 forget(cond);
                 c
