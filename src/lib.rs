@@ -1,4 +1,5 @@
 #![allow(unused_imports)]
+#![allow(non_camel_case_types)]
 
 pub use pmacros::{_suffix, compile_time};
 use std::alloc::{alloc, dealloc, Layout};
@@ -7,6 +8,7 @@ mod macros;
 pub use macros::CallPos;
 
 pub mod atomic;
+pub mod leadlock;
 
 mod my_handle;
 pub use my_handle::MyHandle;

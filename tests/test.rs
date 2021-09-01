@@ -3,7 +3,14 @@
 #[macro_use]
 extern crate comn;
 use comn::*;
-use std::{self, panic};
+use std::{
+    self,
+    marker::PhantomData,
+    ops::{Deref, DerefMut},
+    panic,
+    sync::{Mutex, MutexGuard},
+    thread,
+};
 
 #[test]
 fn test_proc_macro() {
@@ -103,6 +110,15 @@ fn lkf_test() {
 
 #[test]
 fn a() {
+    let c = Mutex::new(("1".to_owned(), 2i32));
+    let n = c.lock();
+
+    let mut n: MutexGuard<(String, i32)> = n.unwrap();
+    let z = n.deref_mut();
+
+    ccc(&mut *n);
+    println!("{}", (*n).0);
+
     fn t(_f: for<'a> fn(&'a String) -> &'a String) {
         let _s = "1".to_owned();
         println!("accept _f");
@@ -115,4 +131,52 @@ fn a() {
         unsafe { &*Box::into_raw(b) }
     }
     t(x1);
+}
+
+fn ccc(tuple: &mut (String, i32)) {
+    tuple.0 = "2.".to_owned();
+}
+
+// #[test]
+// fn sync_and_send() {
+//     use std::cell::UnsafeCell;
+//     let mut uc = UnsafeCell::new(9);
+//     let j = thread::spawn(|| {
+//         let mut uu = uc;
+//         *uu.get_mut() = 100;
+//     });
+//     j.join();
+
+//     let mut uc = UnsafeCell::new(9);
+//     let j = thread::spawn(|| {
+//         *uc.get_mut() = 100;
+//     });
+//     j.join();
+// }
+
+#[test]
+fn x1() {
+    struct x<T> {
+        v: PhantomData<T>,
+    }
+
+    fn gen<T>(s: T) -> x<T> {
+        x { v: PhantomData }
+    }
+
+    let s = "1".to_string();
+    let z = gen(s);
+    println!("--------------xx");
+}
+
+#[test]
+fn x2() {
+    struct a {
+        b: String,
+        marker: std::marker::PhantomPinned,
+    }
+
+    fn x3(mut c: &mut a, d: a) {
+        *c = d;
+    }
 }

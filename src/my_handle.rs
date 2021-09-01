@@ -28,7 +28,7 @@ impl<T> MyHandle<T> {
         let r = self
             .detached
             .compare_exchange(0, detach, Ordering::Relaxed, Ordering::Relaxed);
-        if let Err(_) = r {
+        if r.is_err() {
             self.put();
             return &None;
         };
@@ -70,7 +70,7 @@ impl<T> MyHandle<T> {
     }
 
     pub fn dettach(&self) {
-        if let &Some(_) = self.get_with(1, line!(), file!()) {
+        if self.get_with(1, line!(), file!()).is_some() {
             self.stack.fetch_sub(1, Ordering::Relaxed);
             self.put();
         }

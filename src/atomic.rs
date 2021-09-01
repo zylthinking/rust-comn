@@ -7,14 +7,14 @@ use std::sync::atomic::{
 
 pub trait AtomicN {
     fn atomic_load(&self, order: Ordering) -> Self;
-    fn atomic_store(&mut self, val: Self, order: Ordering);
-    fn atomic_swap(&mut self, val: Self, order: Ordering) -> Self;
-    fn atomic_fetch_add(&mut self, val: Self, ord: Ordering) -> Self;
-    fn atomic_fetch_sub(&mut self, val: Self, ord: Ordering) -> Self;
-    fn atomic_fetch_and(&mut self, val: Self, ord: Ordering) -> Self;
-    fn atomic_fetch_nand(&mut self, val: Self, ord: Ordering) -> Self;
-    fn atomic_fetch_or(&mut self, val: Self, ord: Ordering) -> Self;
-    fn atomic_fetch_xor(&mut self, val: Self, ord: Ordering) -> Self;
+    fn atomic_store(&self, val: Self, order: Ordering);
+    fn atomic_swap(&self, val: Self, order: Ordering) -> Self;
+    fn atomic_fetch_add(&self, val: Self, ord: Ordering) -> Self;
+    fn atomic_fetch_sub(&self, val: Self, ord: Ordering) -> Self;
+    fn atomic_fetch_and(&self, val: Self, ord: Ordering) -> Self;
+    fn atomic_fetch_nand(&self, val: Self, ord: Ordering) -> Self;
+    fn atomic_fetch_or(&self, val: Self, ord: Ordering) -> Self;
+    fn atomic_fetch_xor(&self, val: Self, ord: Ordering) -> Self;
 }
 
 macro_rules! atomic_n_impl {
@@ -27,49 +27,49 @@ macro_rules! atomic_n_impl {
             }
 
             #[inline]
-            fn atomic_store(&mut self, val: Self, order: Ordering) {
+            fn atomic_store(&self, val: Self, order: Ordering) {
                 let adtomic_ptr: &$Atomic = unsafe { transmute(self) };
                 adtomic_ptr.store(val, order)
             }
 
             #[inline]
-            fn atomic_swap(&mut self, val: Self, order: Ordering) -> Self {
+            fn atomic_swap(&self, val: Self, order: Ordering) -> Self {
                 let adtomic_ptr: &$Atomic = unsafe { transmute(self) };
                 adtomic_ptr.swap(val, order)
             }
 
             #[inline]
-            fn atomic_fetch_add(&mut self, val: Self, ord: Ordering) -> Self {
+            fn atomic_fetch_add(&self, val: Self, ord: Ordering) -> Self {
                 let adtomic_ptr: &$Atomic = unsafe { transmute(self) };
                 adtomic_ptr.fetch_add(val, ord)
             }
 
             #[inline]
-            fn atomic_fetch_sub(&mut self, val: Self, ord: Ordering) -> Self {
+            fn atomic_fetch_sub(&self, val: Self, ord: Ordering) -> Self {
                 let adtomic_ptr: &$Atomic = unsafe { transmute(self) };
                 adtomic_ptr.fetch_sub(val, ord)
             }
 
             #[inline]
-            fn atomic_fetch_and(&mut self, val: Self, ord: Ordering) -> Self {
+            fn atomic_fetch_and(&self, val: Self, ord: Ordering) -> Self {
                 let adtomic_ptr: &$Atomic = unsafe { transmute(self) };
                 adtomic_ptr.fetch_and(val, ord)
             }
 
             #[inline]
-            fn atomic_fetch_nand(&mut self, val: Self, ord: Ordering) -> Self {
+            fn atomic_fetch_nand(&self, val: Self, ord: Ordering) -> Self {
                 let adtomic_ptr: &$Atomic = unsafe { transmute(self) };
                 adtomic_ptr.fetch_nand(val, ord)
             }
 
             #[inline]
-            fn atomic_fetch_or(&mut self, val: Self, ord: Ordering) -> Self {
+            fn atomic_fetch_or(&self, val: Self, ord: Ordering) -> Self {
                 let adtomic_ptr: &$Atomic = unsafe { transmute(self) };
                 adtomic_ptr.fetch_or(val, ord)
             }
 
             #[inline]
-            fn atomic_fetch_xor(&mut self, val: Self, ord: Ordering) -> Self {
+            fn atomic_fetch_xor(&self, val: Self, ord: Ordering) -> Self {
                 let adtomic_ptr: &$Atomic = unsafe { transmute(self) };
                 adtomic_ptr.fetch_xor(val, ord)
             }
@@ -90,11 +90,11 @@ atomic_n_impl!(usize, AtomicUsize);
 
 pub trait AtomicP<U>: Sized {
     fn atomic_load(&self, order: Ordering) -> Self;
-    fn atomic_store(&mut self, val: Self, order: Ordering);
-    fn atomic_swap(&mut self, val: Self, order: Ordering) -> Self;
+    fn atomic_store(&self, val: Self, order: Ordering);
+    fn atomic_swap(&self, val: Self, order: Ordering) -> Self;
 
     fn atomic_compare_exchange(
-        &mut self,
+        &self,
         current: Self,
         new: Self,
         success: Ordering,
@@ -102,7 +102,7 @@ pub trait AtomicP<U>: Sized {
     ) -> Result<Self, Self>;
 
     fn atomic_compare_exchange_weak(
-        &mut self,
+        &self,
         current: Self,
         new: Self,
         success: Ordering,
@@ -118,20 +118,20 @@ impl<U> AtomicP<U> for *const U {
     }
 
     #[inline]
-    fn atomic_store(&mut self, val: Self, order: Ordering) {
+    fn atomic_store(&self, val: Self, order: Ordering) {
         let adtomic_ptr: &AtomicPtr<U> = unsafe { transmute(self) };
         adtomic_ptr.store(mptr!(val), order)
     }
 
     #[inline]
-    fn atomic_swap(&mut self, val: Self, order: Ordering) -> Self {
+    fn atomic_swap(&self, val: Self, order: Ordering) -> Self {
         let adtomic_ptr: &AtomicPtr<U> = unsafe { transmute(self) };
         adtomic_ptr.swap(mptr!(val), order)
     }
 
     #[inline]
     fn atomic_compare_exchange(
-        &mut self,
+        &self,
         current: Self,
         new: Self,
         success: Ordering,
@@ -146,7 +146,7 @@ impl<U> AtomicP<U> for *const U {
 
     #[inline]
     fn atomic_compare_exchange_weak(
-        &mut self,
+        &self,
         current: Self,
         new: Self,
         success: Ordering,
@@ -168,20 +168,20 @@ impl<U> AtomicP<U> for *mut U {
     }
 
     #[inline]
-    fn atomic_store(&mut self, val: Self, order: Ordering) {
+    fn atomic_store(&self, val: Self, order: Ordering) {
         let adtomic_ptr: &AtomicPtr<U> = unsafe { transmute(self) };
         adtomic_ptr.store(mptr!(val), order)
     }
 
     #[inline]
-    fn atomic_swap(&mut self, val: Self, order: Ordering) -> Self {
+    fn atomic_swap(&self, val: Self, order: Ordering) -> Self {
         let adtomic_ptr: &AtomicPtr<U> = unsafe { transmute(self) };
         adtomic_ptr.swap(mptr!(val), order)
     }
 
     #[inline]
     fn atomic_compare_exchange(
-        &mut self,
+        &self,
         current: Self,
         new: Self,
         success: Ordering,
@@ -193,7 +193,7 @@ impl<U> AtomicP<U> for *mut U {
 
     #[inline]
     fn atomic_compare_exchange_weak(
-        &mut self,
+        &self,
         current: Self,
         new: Self,
         success: Ordering,
