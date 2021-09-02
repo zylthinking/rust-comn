@@ -197,12 +197,7 @@ fn leadlock_test() {
                 thread::sleep(Duration::from_secs(1));
                 std::sync::Arc::new(n0.atomic_fetch_add(1, Ordering::Relaxed))
             });
-
-            print!(
-                "{:?}\t\t{}\n",
-                thread::current().id(),
-                n1
-            );
+            print!("{:?}\t\t{}\n", thread::current().id(), n1);
         });
         handles.push(h);
     }
