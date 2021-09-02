@@ -4,17 +4,18 @@ use crate::{
 };
 use std::{
     mem::forget,
+    ops::Fn,
     sync::{atomic::Ordering, Arc, Condvar, Mutex, MutexGuard},
 };
 
-pub struct cond<T> {
+struct Cond<T> {
     cv: Condvar,
     uptr: Option<Arc<T>>,
 }
 
-impl<T> cond<T> {
+impl<T> Cond<T> {
     fn new() -> Self {
-        cond {
+        Cond {
             cv: Condvar::new(),
             uptr: None,
         }
@@ -31,28 +32,38 @@ impl<T> cond<T> {
         }
     }
 
-    fn wake(&mut self, uptr: Arc<T>) {
-        self.uptr = Some(uptr);
-        self.cv.notify_one();
+    fn wake(&self, uptr: Arc<T>) {
+        let mut_ref = unsafe { &mut *(self as *const _ as *mut Self) };
+        mut_ref.uptr = Some(uptr);
+        mut_ref.cv.notify_all();
     }
+}
+
+pub enum R<'a, T> {
+    G(MutexGuard<'a, ()>),
+    V(Arc<T>),
 }
 
 pub struct LeadLock<T> {
     nr: i32,
     mux: Mutex<()>,
     mux_cond: Mutex<()>,
-    cond: *const cond<T>,
-    holder: *const cond<T>,
+    cond: *const Cond<T>,
+    holder: *const Cond<T>,
 }
 
-pub enum Locked<'a, T> {
-    locked(MutexGuard<'a, ()>),
-    unlocked(Arc<T>),
+impl<T> Default for LeadLock<T> {
+    fn default() -> Self {
+        Self::new()
+    }
 }
+
+unsafe impl<T> Sync for LeadLock<T> {}
+unsafe impl<T> Send for LeadLock<T> {}
 
 impl<T> LeadLock<T> {
     pub fn new() -> Self {
-        let cond = Arc::new(cond::new());
+        let cond = Arc::new(Cond::new());
         LeadLock {
             nr: 0,
             cond: Arc::into_raw(cond),
@@ -62,7 +73,7 @@ impl<T> LeadLock<T> {
         }
     }
 
-    pub fn lock(&self) -> Locked<'_, T> {
+    pub fn lock(&self) -> R<'_, T> {
         let n = self.nr.atomic_fetch_add(1, Ordering::Relaxed);
         if n > 1 {
             let g = self.mux_cond.lock().unwrap();
@@ -73,7 +84,7 @@ impl<T> LeadLock<T> {
                 forget(cond);
                 c
             };
-            return Locked::unlocked(cond.wait(g));
+            return R::V(cond.wait(g));
         }
 
         let g = self.mux.lock().unwrap();
@@ -81,12 +92,14 @@ impl<T> LeadLock<T> {
 
         let cond = self
             .cond
-            .atomic_swap(Arc::into_raw(Arc::new(cond::new())), Ordering::Relaxed);
+            .atomic_swap(Arc::into_raw(Arc::new(Cond::new())), Ordering::Relaxed);
         self.holder.atomic_store(cond, Ordering::Relaxed);
-        Locked::locked(g)
+        R::G(g)
     }
 
-    pub fn unlock(&self, g: MutexGuard<'_, ()>, uptr: Arc<T>) {
+    /// # Safety
+    /// the function is unsafe because g must be the one returned from lock()
+    pub unsafe fn unlock(&self, g: MutexGuard<'_, ()>, uptr: Arc<T>) {
         let holder = self.holder.atomic_swap(nil!(), Ordering::Relaxed);
         if holder == nil!() {
             return;
@@ -94,11 +107,17 @@ impl<T> LeadLock<T> {
         drop(g);
         // no new follower can reach holder
         drop(self.mux_cond.lock().unwrap());
+        Arc::from_raw(holder).wake(uptr);
+    }
 
-        let mut cond = unsafe { Arc::from_raw(holder) };
-        match Arc::get_mut(&mut cond) {
-            Some(x) => x.wake(uptr),
-            None => unreachable!(),
+    pub fn single_flight<F: FnOnce() -> Arc<T>>(&self, f: F) -> Arc<T> {
+        match self.lock() {
+            R::G(g) => {
+                let any = f();
+                unsafe { self.unlock(g, any.clone()) };
+                any
+            }
+            R::V(any) => any,
         }
     }
 }
