@@ -2,14 +2,15 @@
 
 #[macro_use]
 extern crate comn;
-use comn::*;
+use comn::{atomic::AtomicN, *};
 use std::{
     self,
     marker::PhantomData,
     ops::{Deref, DerefMut},
     panic,
-    sync::{Mutex, MutexGuard},
-    thread,
+    sync::{atomic::Ordering, Arc, Mutex, MutexGuard},
+    thread::{self, JoinHandle},
+    time::Duration,
 };
 
 #[test]
@@ -179,4 +180,33 @@ fn x2() {
     fn x3(mut c: &mut a, d: a) {
         *c = d;
     }
+}
+
+#[test]
+fn leadlock_test() {
+    let mut handles = vec![];
+    let ll = Arc::new(leadlock::LeadLock::<i32>::new());
+    let n = Arc::new(0);
+
+    for i in 0..8 {
+        let cloned = ll.clone();
+        let n0 = n.clone();
+
+        let h = thread::spawn(move || {
+            let n1 = cloned.single_flight(|| -> Arc<i32> {
+                thread::sleep(Duration::from_secs(1));
+                std::sync::Arc::new(n0.atomic_fetch_add(1, Ordering::Relaxed))
+            });
+
+            print!(
+                "{:?}\t\t{}\n",
+                thread::current().id(),
+                n1
+            );
+        });
+        handles.push(h);
+    }
+    handles
+        .into_iter()
+        .for_each(|handle| handle.join().unwrap());
 }
