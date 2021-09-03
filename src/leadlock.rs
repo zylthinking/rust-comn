@@ -3,6 +3,7 @@ use crate::{
     nil,
 };
 use std::{
+    cell::UnsafeCell,
     mem::forget,
     ops::Fn,
     sync::{atomic::Ordering, Arc, Condvar, Mutex, MutexGuard},
@@ -10,32 +11,33 @@ use std::{
 
 struct Cond<T> {
     cv: Condvar,
-    uptr: Option<Arc<T>>,
+    uptr: UnsafeCell<Option<Arc<T>>>,
 }
 
 impl<T> Cond<T> {
     fn new() -> Self {
         Cond {
             cv: Condvar::new(),
-            uptr: None,
+            uptr: UnsafeCell::new(None),
         }
     }
 
     fn wait(&self, mut g: MutexGuard<()>) -> Arc<T> {
-        while self.uptr.is_none() {
+        let uptr = unsafe { &mut *self.uptr.get() };
+        while uptr.is_none() {
             g = self.cv.wait(g).unwrap();
         }
 
-        match self.uptr {
+        match uptr {
             Some(ref uptr) => uptr.clone(),
             None => unreachable!(),
         }
     }
 
-    fn wake(&self, uptr: Arc<T>) {
-        let mut_ref = unsafe { &mut *(self as *const _ as *mut Self) };
-        mut_ref.uptr = Some(uptr);
-        mut_ref.cv.notify_all();
+    fn wake(&self, any: Arc<T>) {
+        let uptr = unsafe { &mut *self.uptr.get() };
+        *uptr = Some(any);
+        self.cv.notify_all();
     }
 }
 
@@ -75,7 +77,7 @@ impl<T> LeadLock<T> {
 
     pub fn lock(&self) -> R<'_, T> {
         let n = self.nr.atomic_fetch_add(1, Ordering::Relaxed);
-        if n > 1 {
+        if n > 0 {
             let g = self.mux_cond.lock().unwrap();
             let cond = unsafe {
                 let cond = self.cond.atomic_load(Ordering::Relaxed);
