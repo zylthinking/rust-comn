@@ -40,7 +40,7 @@ macro_rules! container_of {
     ($ptr:expr, $type:ty, $member:ident) => {{
         unsafe {
             let addr = $ptr as *const _ as usize;
-            let offset = offset_of!($type, $member);
+            let offset = $crate::offset_of!($type, $member);
             &*((addr - offset) as *const $type)
         }
     }};

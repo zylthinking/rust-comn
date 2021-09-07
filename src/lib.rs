@@ -8,6 +8,7 @@ mod macros;
 pub use macros::CallPos;
 
 pub mod atomic;
+pub mod autex;
 pub mod leadlock;
 
 mod my_handle;

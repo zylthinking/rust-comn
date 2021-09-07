@@ -5,7 +5,7 @@ use std::sync::atomic::{
     AtomicU64, AtomicU8, AtomicUsize, Ordering,
 };
 
-pub trait AtomicN {
+pub trait AtomicN: Sized {
     fn atomic_load(&self, order: Ordering) -> Self;
     fn atomic_store(&self, val: Self, order: Ordering);
     fn atomic_swap(&self, val: Self, order: Ordering) -> Self;
@@ -15,6 +15,13 @@ pub trait AtomicN {
     fn atomic_fetch_nand(&self, val: Self, ord: Ordering) -> Self;
     fn atomic_fetch_or(&self, val: Self, ord: Ordering) -> Self;
     fn atomic_fetch_xor(&self, val: Self, ord: Ordering) -> Self;
+    fn atomic_compare_exchange(
+        &self,
+        current: Self,
+        new: Self,
+        success: Ordering,
+        failure: Ordering,
+    ) -> Result<Self, Self>;
 }
 
 macro_rules! atomic_n_impl {
@@ -72,6 +79,18 @@ macro_rules! atomic_n_impl {
             fn atomic_fetch_xor(&self, val: Self, ord: Ordering) -> Self {
                 let adtomic_ptr: &$Atomic = unsafe { transmute(self) };
                 adtomic_ptr.fetch_xor(val, ord)
+            }
+
+            #[inline]
+            fn atomic_compare_exchange(
+                &self,
+                current: Self,
+                new: Self,
+                success: Ordering,
+                failure: Ordering,
+            ) -> Result<Self, Self> {
+                let adtomic_ptr: &$Atomic = unsafe { transmute(self) };
+                adtomic_ptr.compare_exchange(current, new, success, failure)
             }
         }
     };

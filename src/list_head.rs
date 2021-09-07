@@ -19,7 +19,7 @@ macro_rules! InitListHead {
 #[macro_export]
 macro_rules! list_entry {
     ($ptr:expr, $type:ty, $member:ident) => {
-        container_of!($ptr, $type, $member)
+        $crate::container_of!($ptr, $type, $member)
     };
 }
 
