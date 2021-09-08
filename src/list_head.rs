@@ -1,6 +1,8 @@
 #![allow(unused_macros)]
 #![allow(dead_code)]
 
+use std::usize;
+
 use crate::nil;
 
 pub struct ListHead {
@@ -75,7 +77,7 @@ impl ListHead {
 
     #[inline]
     pub fn list_empty(&self) -> bool {
-        self.next == self.prev
+        self.next as usize == self as *const _ as usize
     }
 
     #[inline]

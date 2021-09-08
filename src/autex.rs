@@ -2,7 +2,7 @@ use crate::{atomic::AtomicN, list_entry, ListHead};
 use std::{
     future::Future,
     pin::Pin,
-    sync::{atomic::Ordering, Arc, Mutex, MutexGuard},
+    sync::{atomic::Ordering, Arc, Mutex},
     task::{Context, Poll, Wake, Waker},
 };
 
@@ -26,6 +26,7 @@ struct autex<'a> {
     ent: ListHead,
     waker: Option<Waker>,
 }
+unsafe impl<'a> Send for autex<'a> {}
 
 impl<'a> autex<'a> {
     fn new(aux: &'a Autex) -> Self {
@@ -69,6 +70,22 @@ impl Autex {
         aux
     }
 
+    fn wait_enter(&self, autx: &mut autex) {
+        let mut g = self.mux.lock().unwrap();
+        unsafe {
+            g.list_add_tail(&mut autx.ent);
+        }
+        drop(g);
+    }
+
+    fn wait_leave(&self, autx: &mut autex) {
+        let g = self.mux.lock().unwrap();
+        unsafe {
+            autx.ent.list_del();
+        }
+        drop(g);
+    }
+
     pub async fn lock<'a>(&'a self) -> Guard<'a> {
         let r = self
             .hold
@@ -78,19 +95,10 @@ impl Autex {
         }
 
         let mut autx = autex::new(self);
-        let mut g0 = self.mux.lock().unwrap();
-        unsafe {
-            g0.list_add_tail(&mut autx.ent);
-        }
-        drop(g0);
-
-        let g1 = (&mut autx).await;
-        g0 = self.mux.lock().unwrap();
-        unsafe {
-            autx.ent.list_del();
-        }
-        drop(g0);
-        g1
+        self.wait_enter(&mut autx);
+        let g = (&mut autx).await;
+        self.wait_leave(&mut autx);
+        g
     }
 
     fn unlock(&self) {
