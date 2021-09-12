@@ -3,12 +3,12 @@ use super::{
     context,
 };
 use crate::{
-    atomic::AtomicN, callpos, container_of, lkf_get, lkf_next_unsafe, nil, ListHead, Lkf, LkfNode,
+    callpos, container_of, lkf_get, lkf_next_unsafe, lkf_put_unsafe, nil, ListHead, Lkf, LkfNode,
 };
 use std::{
     future::Future,
     pin::Pin,
-    sync::atomic::Ordering,
+    sync::atomic::{AtomicI32, Ordering},
     task::{Context, Poll, Waker},
     thread,
 };
@@ -30,7 +30,7 @@ impl Cond {
             return;
         }
         let wn = container_of!(node, WakeNode, node);
-        wn.waked.atomic_store(1, Ordering::Relaxed);
+        wn.waked.store(1, Ordering::Relaxed);
         wn.waker.wake_by_ref();
     }
 
@@ -47,7 +47,7 @@ impl Cond {
             }
 
             let wn = container_of!(node, WakeNode, node);
-            wn.waked.atomic_store(1, Ordering::Relaxed);
+            wn.waked.store(1, Ordering::Relaxed);
             wn.waker.wake_by_ref();
             if node == nodes {
                 break;
@@ -58,9 +58,7 @@ impl Cond {
     pub async fn wait<'a, 'b>(&'a self, g: Guard<'b>) -> Guard<'b> {
         let autx = g.0;
         let mut wn = WakeNode::new(context.await);
-        unsafe {
-            self.wait_list.put(&mut wn.node, callpos!());
-        }
+        lkf_put_unsafe!(self.wait_list, &mut wn.node);
         drop(g);
         wn.await;
         autx.lock().await
@@ -68,7 +66,7 @@ impl Cond {
 }
 
 struct WakeNode {
-    waked: i32,
+    waked: AtomicI32,
     node: LkfNode,
     waker: Waker,
 }
@@ -76,7 +74,7 @@ struct WakeNode {
 impl WakeNode {
     pub fn new(waker: Waker) -> Self {
         WakeNode {
-            waked: 0,
+            waked: AtomicI32::new(0),
             node: LkfNode::new(),
             waker: waker,
         }
@@ -86,7 +84,7 @@ impl WakeNode {
 impl Future for WakeNode {
     type Output = ();
     fn poll(mut self: Pin<&mut Self>, ctx: &mut Context<'_>) -> Poll<Self::Output> {
-        let waked = self.waked.atomic_load(Ordering::Relaxed);
+        let waked = self.waked.load(Ordering::Relaxed);
         if waked == 0 {
             return Poll::Pending;
         }

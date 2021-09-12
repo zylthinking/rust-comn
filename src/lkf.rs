@@ -12,7 +12,7 @@ pub struct LkfNode(AtomicPtr<LkfNode>, AtomicPtr<CallPos>);
 impl LkfNode {
     #[inline]
     pub fn new() -> LkfNode {
-        LkfNode(nil!(), nil!())
+        LkfNode(AtomicPtr::new(nil!()), AtomicPtr::new(nil!()))
     }
 
     #[inline]
@@ -24,10 +24,10 @@ impl LkfNode {
         }
 
         if ptr != self {
-            self.0 = (*ptr).0;
+            self.0 = AtomicPtr::new(next);
         }
-        (*ptr).0 = nil!();
-        (*ptr).1 = nil!();
+        (*ptr).0 = AtomicPtr::new(nil!());
+        (*ptr).1 = AtomicPtr::new(nil!());
         ptr
     }
 }
@@ -54,7 +54,7 @@ impl Lkf {
     pub fn new() -> Lkf {
         Lkf {
             root: LkfNode::new(),
-            tail: nil!(),
+            tail: AtomicPtr::new(nil!()),
         }
     }
 
@@ -74,7 +74,7 @@ impl Lkf {
             return Err(&*pos);
         }
 
-        let next = (*node).0.load(Ordering::Relaxed);
+        let mut next = (*node).0.load(Ordering::Relaxed);
         let nextp = self.tail.swap(&mut next, Ordering::Relaxed);
         if nextp == nil!() {
             self.root.0.store(node, Ordering::Relaxed);
@@ -122,13 +122,13 @@ impl Lkf {
                 if r.is_ok() {
                     // There is only one entry in list,
                     // and the entry has been unlinked by the code up above.
-                    (*node).1 = nil!();
+                    (*node).1 = AtomicPtr::new(nil!());
                     break;
                 }
 
                 // There are at least 2 entries in list
-                // no entry unlinked, fallthrough to unlink the 1st entry
-                next = *r.err().unwrap();
+                node = self.root.0.load(Ordering::Relaxed);
+                continue;
             }
 
             let r = self
@@ -136,8 +136,8 @@ impl Lkf {
                 .0
                 .compare_exchange(node, next, Ordering::Relaxed, Ordering::Relaxed);
             if r.is_ok() {
-                (*node).0 = nil!();
-                (*node).1 = nil!();
+                (*node).0 = AtomicPtr::new(nil!());
+                (*node).1 = AtomicPtr::new(nil!());
                 break;
             }
             node = r.err().unwrap();
