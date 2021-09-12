@@ -3,10 +3,10 @@ use std::{
     future::Future,
     pin::Pin,
     sync::{atomic::Ordering, Arc, Mutex},
-    task::{Context, Poll, Wake, Waker},
+    task::{self, Context, Poll, Wake, Waker},
 };
 
-pub struct Guard<'a>(&'a Autex);
+pub struct Guard<'a>(pub(super) &'a Autex);
 impl<'a> Drop for Guard<'a> {
     fn drop(&mut self) {
         self.0.unlock();

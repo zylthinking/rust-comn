@@ -61,10 +61,10 @@ impl Display for CallPos {
 #[macro_export]
 macro_rules! callpos {
     () => {{
-        static POS: CallPos = CallPos {
+        static mut POS: $crate::CallPos = $crate::CallPos {
             line: line!(),
             file: file!(),
         };
-        &POS
+        &mut POS
     }};
 }

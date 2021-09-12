@@ -1,10 +1,10 @@
+use comn::asyn::autex;
 use std::{thread, time::Duration};
-extern crate comn;
 
 #[tokio::main]
 #[test]
 async fn tokio_main() {
-    let aux0 = std::sync::Arc::new(comn::autex::Autex::new());
+    let aux0 = std::sync::Arc::new(autex::Autex::new());
 
     let aux = aux0.clone();
     let f1 = async move {
